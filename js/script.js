@@ -9,6 +9,17 @@ const modalMedia = document.getElementById('modalMedia');
 const modalTitle = document.getElementById('modalTitle');
 const modalDate = document.getElementById('modalDate');
 const modalExplanation = document.getElementById('modalExplanation');
+const factText = document.getElementById('factText');
+
+// These facts are randomly selected each time the page loads.
+const spaceFacts = [
+	'A day on Venus is longer than a year on Venus.',
+	'Jupiter is so large that more than 1,300 Earths could fit inside it.',
+	'Footprints left on the Moon could remain there for millions of years.',
+	'Light from the Sun takes about eight minutes to reach Earth.',
+	'Saturn is less dense than water, so it could float in a giant bathtub.',
+	'Olympus Mons on Mars is nearly three times taller than Mount Everest.'
+];
 
 // NASA provides this key for requests to the APOD API.
 const apiKey = 'KwBr7mqHPz6BwBGtKtqWzLw9bnqhFmtKMHq9zkFn';
@@ -18,6 +29,12 @@ const apiKey = 'KwBr7mqHPz6BwBGtKtqWzLw9bnqhFmtKMHq9zkFn';
 // - Default to a range of 9 days (from 9 days ago to today)
 // - Restrict dates to NASA's image archive (starting from 1995)
 setupDateInputs(startInput, endInput);
+showRandomFact();
+
+function showRandomFact() {
+	const randomIndex = Math.floor(Math.random() * spaceFacts.length);
+	factText.textContent = spaceFacts[randomIndex];
+}
 
 // Fetch and display the APOD entries for the selected date range.
 searchButton.addEventListener('click', getSpaceImages);

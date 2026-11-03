@@ -90,11 +90,18 @@ function displaySpaceImages(spaceImages) {
 		media.src = spaceImage.url;
 		media.alt = spaceImage.title;
 		media.title = spaceImage.title;
+		if (spaceImage.media_type === 'video') {
+			media.allowFullscreen = true;
+			media.loading = 'lazy';
+		}
 
 		const description = document.createElement('p');
 		description.textContent = spaceImage.explanation;
 
 		galleryItem.append(title, date, media, description);
+		if (spaceImage.media_type === 'video') {
+			galleryItem.appendChild(createVideoLink(spaceImage.url));
+		}
 		gallery.appendChild(galleryItem);
 	});
 }
@@ -105,13 +112,29 @@ function openModal(spaceImage) {
 	media.src = spaceImage.url;
 	media.alt = spaceImage.title;
 	media.title = spaceImage.title;
+	if (spaceImage.media_type === 'video') {
+		media.allowFullscreen = true;
+	}
 	modalMedia.appendChild(media);
+	if (spaceImage.media_type === 'video') {
+		modalMedia.appendChild(createVideoLink(spaceImage.url));
+	}
 
 	modalTitle.textContent = spaceImage.title;
 	modalDate.textContent = spaceImage.date;
 	modalExplanation.textContent = spaceImage.explanation;
 	modal.hidden = false;
 	closeModalButton.focus();
+}
+
+function createVideoLink(videoUrl) {
+	const videoLink = document.createElement('a');
+	videoLink.className = 'video-link';
+	videoLink.href = videoUrl;
+	videoLink.target = '_blank';
+	videoLink.rel = 'noopener noreferrer';
+	videoLink.textContent = 'Watch this video on NASA or YouTube';
+	return videoLink;
 }
 
 function closeModal() {

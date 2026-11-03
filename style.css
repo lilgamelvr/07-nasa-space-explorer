@@ -221,6 +221,17 @@ button:focus-visible {
   object-fit: contain;
 }
 
+.video-link {
+  display: inline-block;
+  margin-top: 10px;
+  color: var(--nasa-blue);
+  font-weight: bold;
+}
+
+.video-link:hover {
+  color: var(--nasa-red);
+}
+
 .modal-content h2 {
   margin-bottom: 8px;
   color: var(--nasa-blue);

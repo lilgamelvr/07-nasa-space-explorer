@@ -21,9 +21,6 @@ const spaceFacts = [
 	'Olympus Mons on Mars is nearly three times taller than Mount Everest.'
 ];
 
-// NASA provides this key for requests to the APOD API.
-const apiKey = 'KwBr7mqHPz6BwBGtKtqWzLw9bnqhFmtKMHq9zkFn';
-
 // Call the setupDateInputs function from dateRange.js
 // This sets up the date pickers to:
 // - Default to a range of 9 days (from 9 days ago to today)
@@ -53,14 +50,11 @@ async function getSpaceImages() {
 	gallery.textContent = '🔄 Loading space photos…';
 	searchButton.disabled = true;
 
-	const query = new URLSearchParams({
-		api_key: apiKey,
-		start_date: startInput.value,
-		end_date: endInput.value
-	});
-
 	try {
-		const response = await fetch(`https://api.nasa.gov/planetary/apod?${query}`);
+		// The NASA feed uses hdurl for the direct image and url for the article.
+		const response = await fetch(
+			`https://science.nasa.gov/wp-json/wp/v2/apod-basic?per_page=100`
+		);
 		const result = await response.json();
 
 		if (!response.ok) {
@@ -71,12 +65,19 @@ async function getSpaceImages() {
 			throw new Error(result.error.message);
 		}
 
-		const images = Array.isArray(result) ? result : [result];
+		const images = (Array.isArray(result) ? result : [result]).filter(
+			(spaceImage) =>
+				spaceImage.date >= startInput.value &&
+				spaceImage.date <= endInput.value
+		);
+		if (images.length === 0) {
+			throw new Error('NASA could not find images for those dates.');
+		}
 		if (images.length > 0 && images.every(isNASAPlaceholder)) {
 			throw new Error('NASA is currently returning placeholder data instead of APOD photos. Please try again later.');
 		}
 
-		displaySpaceImages(result);
+		displaySpaceImages(images);
 	} catch (error) {
 		gallery.textContent = error.message;
 	} finally {
@@ -85,7 +86,11 @@ async function getSpaceImages() {
 }
 
 function isNASAPlaceholder(spaceImage) {
-	return spaceImage.title === 'NASA Science' && spaceImage.url.includes('nasa-logo');
+	return spaceImage.title === 'NASA Science' && getMediaUrl(spaceImage).includes('nasa-logo');
+}
+
+function getMediaUrl(spaceImage) {
+	return spaceImage.hdurl || spaceImage.url;
 }
 
 function displaySpaceImages(spaceImages) {
@@ -104,7 +109,7 @@ function displaySpaceImages(spaceImages) {
 		date.textContent = spaceImage.date;
 
 		const media = document.createElement(spaceImage.media_type === 'video' ? 'iframe' : 'img');
-		media.src = spaceImage.url;
+		media.src = getMediaUrl(spaceImage);
 		media.alt = spaceImage.title;
 		media.title = spaceImage.title;
 		if (spaceImage.media_type === 'video') {
@@ -113,7 +118,7 @@ function displaySpaceImages(spaceImages) {
 		}
 
 		const description = document.createElement('p');
-		description.textContent = spaceImage.explanation;
+		description.innerHTML = spaceImage.explanation;
 
 		galleryItem.append(title, date, media, description);
 		if (spaceImage.media_type === 'video') {
@@ -126,7 +131,7 @@ function displaySpaceImages(spaceImages) {
 function openModal(spaceImage) {
 	modalMedia.textContent = '';
 	const media = document.createElement(spaceImage.media_type === 'video' ? 'iframe' : 'img');
-	media.src = spaceImage.url;
+	media.src = getMediaUrl(spaceImage);
 	media.alt = spaceImage.title;
 	media.title = spaceImage.title;
 	if (spaceImage.media_type === 'video') {
@@ -139,7 +144,7 @@ function openModal(spaceImage) {
 
 	modalTitle.textContent = spaceImage.title;
 	modalDate.textContent = spaceImage.date;
-	modalExplanation.textContent = spaceImage.explanation;
+	modalExplanation.innerHTML = spaceImage.explanation;
 	modal.hidden = false;
 	closeModalButton.focus();
 }
